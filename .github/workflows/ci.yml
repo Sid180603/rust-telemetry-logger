@@ -106,7 +106,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Install cross
-        run: cargo install cross --locked
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cross@0.2.5
 
       - name: cross build telemetry-linux (aarch64-unknown-linux-gnu)
         run: cross build -p telemetry-linux --target aarch64-unknown-linux-gnu
@@ -127,7 +129,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Install cargo-deny
-        run: cargo install cargo-deny --locked --version "0.19.8"
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny@0.19.8
 
       - name: cargo deny check
         run: cargo deny check

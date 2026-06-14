@@ -119,7 +119,7 @@ cargo test-all
 
 | Target | Command | Notes |
 |---|---|---|
-| Host (Windows / Linux) | `cargo build --workspace` | Excludes firmware |
+| Host (Windows / Linux) | `cargo build` | Uses `default-members`, excludes firmware |
 | no_std verify | `cargo build -p telemetry-core --target thumbv8m.main-none-eabihf` | Proves no_std |
 | Firmware (debug) | `cargo fw` | Requires `thumbv8m.main-none-eabihf` target |
 | Firmware (flash) | `cargo fw-flash` | Requires probe-rs + debug probe |

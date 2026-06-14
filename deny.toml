@@ -1,25 +1,23 @@
-# deny.toml — cargo-deny configuration.
+# deny.toml — cargo-deny 0.19 configuration (version 2 advisories schema).
 # Run: cargo deny check
 # Docs: https://embarkstudios.github.io/cargo-deny/
 
 # ---------------------------------------------------------------------------
-# Advisories — flag known-vulnerable, unmaintained, or yanked crates.
+# Advisories (version = 2 schema, cargo-deny >= 0.14)
+#   - `vulnerability` and `notice` keys are REMOVED in v2.
+#     Vulnerabilities are always denied; notices are always warned.
+#   - `unmaintained` is now a SCOPE selector, not a severity.
+#   - `yanked` still accepts "deny" | "warn" | "allow".
 # ---------------------------------------------------------------------------
 [advisories]
-# Deny crates with known security vulnerabilities (RustSec advisories).
-vulnerability = "deny"
-# Warn on crates flagged as unmaintained (may upgrade to deny later).
-unmaintained  = "warn"
-# Deny yanked crate versions.
-yanked        = "deny"
-# Warn on crates with notices (informational).
-notice        = "warn"
+version      = 2
+unmaintained = "workspace"   # "all" | "workspace" | "transitive" | "none"
+yanked       = "deny"
 
 # ---------------------------------------------------------------------------
 # Licenses — allow only permissive SPDX identifiers.
 # ---------------------------------------------------------------------------
 [licenses]
-# Deny any crate whose license is not in this allow-list.
 allow = [
     "MIT",
     "Apache-2.0",
@@ -31,27 +29,18 @@ allow = [
     "Unicode-DFS-2016",
     "CC0-1.0",
     "Zlib",
+    "BSL-1.0",  # cobs crate (Boost Software License — permissive)
+    "0BSD",     # various transitive deps (BSD Zero Clause)
 ]
-# Deny anything that triggers copyleft obligations.
-deny = [
-    "GPL-2.0",
-    "GPL-3.0",
-    "LGPL-2.0",
-    "LGPL-2.1",
-    "LGPL-3.0",
-    "AGPL-3.0",
-]
-# Confidence threshold for fuzzy license matching.
+# Any license NOT in the allow list above is implicitly denied.
+# Copyleft (GPL/LGPL/AGPL) is not in the list, so it is denied automatically.
 confidence-threshold = 0.8
 
 # ---------------------------------------------------------------------------
 # Bans — duplicate crates and explicitly blocked crates.
 # ---------------------------------------------------------------------------
 [bans]
-# Warn when multiple versions of the same crate are in the tree.
 multiple-versions = "warn"
-# Deny these crates outright (empty now; add as needed).
-deny = []
 
 # ---------------------------------------------------------------------------
 # Sources — only allow crates from crates.io.
@@ -60,3 +49,4 @@ deny = []
 unknown-registry = "deny"
 unknown-git      = "deny"
 allow-registry   = ["https://github.com/rust-lang/crates.io-index"]
+

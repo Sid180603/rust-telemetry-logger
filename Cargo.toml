@@ -38,7 +38,7 @@ serde          = { version = "1",     default-features = false, features = ["der
 postcard       = { version = "1.1",   default-features = false, features = ["use-crc"] }
 heapless       = { version = "0.9",   default-features = false }
 crc            = { version = "3.4",   default-features = false }
-cobs           = { version = "0.2",   default-features = false }
+cobs           = { version = "0.3",   default-features = false }
 defmt          = { version = "1",     default-features = false }
 
 # std / host
