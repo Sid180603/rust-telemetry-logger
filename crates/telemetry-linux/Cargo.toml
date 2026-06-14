@@ -1,0 +1,21 @@
+[package]
+name        = "telemetry-linux"
+description = "Embedded Linux daemon: serialport source + rotating file storage + systemd sd-notify readiness."
+version.workspace     = true
+edition.workspace     = true
+rust-version.workspace = true
+license.workspace     = true
+repository.workspace  = true
+authors.workspace     = true
+
+[[bin]]
+name = "telemetry-linux"
+path = "src/main.rs"
+
+[dependencies]
+telemetry-core = { workspace = true }
+telemetry-std  = { workspace = true }
+clap           = { workspace = true }
+
+[lints]
+workspace = true

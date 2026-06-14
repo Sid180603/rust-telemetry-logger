@@ -1,0 +1,28 @@
+[package]
+name        = "telemetry-core"
+description = "no_std, heap-free telemetry pipeline logic: framer, validator, filter, ring-buffer, record, stats."
+version.workspace     = true
+edition.workspace     = true
+rust-version.workspace = true
+license.workspace     = true
+repository.workspace  = true
+authors.workspace     = true
+
+[features]
+default = []
+# Enable defmt::Format derives on public types (for on-target logging via RTT).
+defmt = ["dep:defmt"]
+
+[dependencies]
+serde    = { workspace = true }
+postcard = { workspace = true }
+heapless = { workspace = true }
+crc      = { workspace = true }
+cobs     = { workspace = true }
+defmt    = { workspace = true, optional = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+
+[lints]
+workspace = true

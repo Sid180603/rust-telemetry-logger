@@ -1,0 +1,25 @@
+[package]
+name        = "telemetry-fw"
+description = "RP2350 / Pico 2 bare-metal firmware: v1 blocking → v2 async (Embassy). Reuses telemetry-core unchanged."
+version.workspace     = true
+edition.workspace     = true
+rust-version.workspace = true
+license.workspace     = true
+repository.workspace  = true
+authors.workspace     = true
+
+# This crate only builds for the embedded target.
+# Build with: cargo build -p telemetry-fw --target thumbv8m.main-none-eabihf
+# It is excluded from workspace default-members to avoid breaking host `cargo build`.
+
+[[bin]]
+name    = "telemetry-fw"
+path    = "src/main.rs"
+# Tell cargo this is a no_std binary (no need for std at link time)
+# The actual no_std / no_main attrs live in src/main.rs.
+
+[dependencies]
+telemetry-core = { workspace = true }
+
+[lints]
+workspace = true

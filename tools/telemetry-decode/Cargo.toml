@@ -1,0 +1,22 @@
+[package]
+name        = "telemetry-decode"
+description = "Decode binary telemetry log segments to table / JSON / NDJSON. Reuses telemetry-core types."
+version.workspace     = true
+edition.workspace     = true
+rust-version.workspace = true
+license.workspace     = true
+repository.workspace  = true
+authors.workspace     = true
+
+[[bin]]
+name = "telemetry-decode"
+path = "src/main.rs"
+
+[dependencies]
+telemetry-core = { workspace = true }
+clap           = { workspace = true }
+serde_json     = { workspace = true }
+comfy-table    = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,19 @@
+[package]
+name        = "telemetry-std"
+description = "std implementations of telemetry-core traits: SystemClock and rotating FileStorage."
+version.workspace     = true
+edition.workspace     = true
+rust-version.workspace = true
+license.workspace     = true
+repository.workspace  = true
+authors.workspace     = true
+
+[dependencies]
+telemetry-core = { workspace = true }
+
+[dev-dependencies]
+assert_fs  = { workspace = true }
+predicates = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,22 @@
+[package]
+name        = "packet-generator"
+description = "Test tool: emits valid/invalid/bursty COBS-framed telemetry to file, TCP, UDP, or stdout."
+version.workspace     = true
+edition.workspace     = true
+rust-version.workspace = true
+license.workspace     = true
+repository.workspace  = true
+authors.workspace     = true
+
+[[bin]]
+name = "packet-generator"
+path = "src/main.rs"
+
+[dependencies]
+telemetry-core = { workspace = true }
+clap           = { workspace = true }
+rand           = { workspace = true }
+rand_chacha    = { workspace = true }
+
+[lints]
+workspace = true

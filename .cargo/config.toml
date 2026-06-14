@@ -1,0 +1,46 @@
+# .cargo/config.toml — workspace-wide Cargo configuration.
+#
+# IMPORTANT: No global [build] target is set here.  The firmware target
+# (thumbv8m.main-none-eabihf) is applied ONLY through explicit --target flags
+# or the `fw` alias below, so host builds are never affected.
+
+# ---------------------------------------------------------------------------
+# Firmware target: RP2350 / Pico 2 (Cortex-M33, hard-float)
+# These settings ONLY apply when building for this target.
+# ---------------------------------------------------------------------------
+[target.thumbv8m.main-none-eabihf]
+# flash + run via probe-rs (requires a debug probe connected)
+runner = "probe-rs run --chip RP2350"
+
+rustflags = [
+    # flip-link: moves the stack to the start of RAM so stack overflows fault
+    # cleanly rather than silently corrupting the heap / bss.
+    "-C", "linker=flip-link",
+    # cortex-m-rt linker script (supplied by the rp235x-hal / memory.x)
+    "-C", "link-arg=-Tlink.x",
+    # Required for cortex-m-rt to work correctly
+    "-C", "link-arg=--nmagic",
+]
+
+# ---------------------------------------------------------------------------
+# aarch64 Linux cross-build (CI uses `cross`; local Linux alt: gcc-aarch64-linux-gnu)
+# ---------------------------------------------------------------------------
+[target.aarch64-unknown-linux-gnu]
+# When building locally without `cross`, uncomment and install the linker:
+#   sudo apt install gcc-aarch64-linux-gnu
+# linker = "aarch64-linux-gnu-gcc"
+
+# ---------------------------------------------------------------------------
+# Cargo aliases for ergonomics
+# ---------------------------------------------------------------------------
+[alias]
+# Build firmware for RP2350
+fw         = "build -p telemetry-fw --target thumbv8m.main-none-eabihf"
+# Build + flash firmware
+fw-flash   = "build -p telemetry-fw --target thumbv8m.main-none-eabihf --release"
+# Run all host tests
+test-all   = "test --workspace --exclude telemetry-fw"
+# Lint everything (host targets)
+lint       = "clippy --workspace --exclude telemetry-fw -- -D warnings"
+# Lint firmware separately
+lint-fw    = "clippy -p telemetry-fw --target thumbv8m.main-none-eabihf -- -D warnings"

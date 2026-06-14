@@ -1,0 +1,21 @@
+[package]
+name        = "telemetry-host"
+description = "Host simulation binary: File/TCP/UDP packet source → telemetry-core pipeline → rotating file storage."
+version.workspace     = true
+edition.workspace     = true
+rust-version.workspace = true
+license.workspace     = true
+repository.workspace  = true
+authors.workspace     = true
+
+[[bin]]
+name = "telemetry-host"
+path = "src/main.rs"
+
+[dependencies]
+telemetry-core = { workspace = true }
+telemetry-std  = { workspace = true }
+clap           = { workspace = true }
+
+[lints]
+workspace = true

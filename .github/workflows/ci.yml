@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Job 1: Format check
+  # -------------------------------------------------------------------------
+  fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.89.0"
+          components: rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: cargo fmt --check
+        run: cargo fmt --all --check
+
+  # -------------------------------------------------------------------------
+  # Job 2: Clippy (host targets only; firmware linted separately)
+  # -------------------------------------------------------------------------
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.89.0"
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: cargo clippy (host, deny warnings)
+        run: cargo clippy --workspace --exclude telemetry-fw -- -D warnings
+
+  # -------------------------------------------------------------------------
+  # Job 3: Host tests
+  # -------------------------------------------------------------------------
+  test:
+    name: Test (host)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.89.0"
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: cargo build (default-members; excludes telemetry-fw)
+        run: cargo build
+
+      - name: cargo test (workspace, exclude firmware)
+        run: cargo test --workspace --exclude telemetry-fw
+
+  # -------------------------------------------------------------------------
+  # Job 4: no_std build — proves telemetry-core compiles for bare-metal
+  # -------------------------------------------------------------------------
+  build-nostd:
+    name: Build no_std (thumbv8m)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.89.0"
+          targets: thumbv8m.main-none-eabihf
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: cargo build telemetry-core (thumbv8m.main-none-eabihf)
+        run: cargo build -p telemetry-core --target thumbv8m.main-none-eabihf
+
+  # -------------------------------------------------------------------------
+  # Job 5: aarch64 cross-build via `cross` (Docker)
+  #   Proves telemetry-linux compiles for Raspberry Pi 4/5 / Yocto target.
+  # -------------------------------------------------------------------------
+  build-cross:
+    name: Cross-build aarch64 (telemetry-linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.89.0"
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install cross
+        run: cargo install cross --locked
+
+      - name: cross build telemetry-linux (aarch64-unknown-linux-gnu)
+        run: cross build -p telemetry-linux --target aarch64-unknown-linux-gnu
+
+  # -------------------------------------------------------------------------
+  # Job 6: cargo-deny — supply chain / license / advisory checks
+  # -------------------------------------------------------------------------
+  deny:
+    name: Deny (supply chain)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.89.0"
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --locked --version "0.19.8"
+
+      - name: cargo deny check
+        run: cargo deny check

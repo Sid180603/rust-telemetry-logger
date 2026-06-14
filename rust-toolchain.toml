@@ -1,0 +1,14 @@
+# rust-toolchain.toml — pinned stable toolchain for reproducible builds.
+#
+# Bump this version deliberately (test all targets after bumping).
+# The same version is hardcoded in .github/workflows/ci.yml.
+
+[toolchain]
+channel    = "1.89.0"
+components = ["rustfmt", "clippy", "llvm-tools"]
+targets    = [
+    "x86_64-unknown-linux-gnu",      # CI / Linux host
+    "x86_64-pc-windows-msvc",        # Windows host
+    "thumbv8m.main-none-eabihf",     # RP2350 / Pico 2 firmware (Cortex-M33)
+    "aarch64-unknown-linux-gnu",     # Raspberry Pi 4/5 / Yocto cross-build
+]

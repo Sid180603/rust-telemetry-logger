@@ -1,0 +1,10 @@
+# rustfmt.toml — stable-only formatting configuration (edition 2024).
+#
+# Only options available on stable rustfmt are used here.
+# Nightly-only options (imports_granularity, group_imports, trailing_comma,
+# blank_lines_upper_bound) are omitted to keep `cargo fmt` warning-free.
+
+edition       = "2024"
+max_width     = 100
+tab_spaces    = 4
+newline_style = "Auto"

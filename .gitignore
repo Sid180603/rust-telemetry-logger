@@ -1,0 +1,20 @@
+/target
+**/*.rs.bk
+.DS_Store
+Thumbs.db
+
+# cargo-fuzz artifacts
+fuzz/target
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Yocto build artifacts (these live in yocto/ but can be large)
+yocto/build/
+yocto/downloads/
+yocto/sstate-cache/
+
+# Local env / secrets
+.env

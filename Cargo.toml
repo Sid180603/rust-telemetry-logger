@@ -1,0 +1,88 @@
+[workspace]
+members = [
+    "crates/telemetry-core",
+    "crates/telemetry-std",
+    "crates/telemetry-host",
+    "crates/telemetry-linux",
+    "crates/telemetry-fw",
+    "tools/packet-generator",
+    "tools/telemetry-decode",
+]
+# Exclude firmware from default members — it only builds for thumbv8m.main-none-eabihf.
+# Build with: cargo build -p telemetry-fw --target thumbv8m.main-none-eabihf
+default-members = [
+    "crates/telemetry-core",
+    "crates/telemetry-std",
+    "crates/telemetry-host",
+    "crates/telemetry-linux",
+    "tools/packet-generator",
+    "tools/telemetry-decode",
+]
+resolver = "3"
+
+[workspace.package]
+version       = "0.1.0"
+edition       = "2024"
+rust-version  = "1.85"
+license       = "MIT OR Apache-2.0"
+repository    = "https://github.com/Sid180603/rust-telemetry-logger"
+authors       = ["Siddharth <ssiddhu01@gmail.com>"]
+
+# ---------------------------------------------------------------------------
+# Shared dependency versions — member crates opt in with `dep.workspace = true`
+# Add versions lazily as each phase first needs them.
+# ---------------------------------------------------------------------------
+[workspace.dependencies]
+# Core / no_std
+serde          = { version = "1",     default-features = false, features = ["derive"] }
+postcard       = { version = "1.1",   default-features = false, features = ["use-crc"] }
+heapless       = { version = "0.9",   default-features = false }
+crc            = { version = "3.4",   default-features = false }
+cobs           = { version = "0.2",   default-features = false }
+defmt          = { version = "1",     default-features = false }
+
+# std / host
+clap           = { version = "4",     features = ["derive"] }
+serde_json     = { version = "1",     default-features = false, features = ["alloc"] }
+comfy-table    = { version = "7" }
+rand           = { version = "0.9" }
+rand_chacha    = { version = "0.9" }
+
+# Dev / testing
+assert_cmd     = { version = "2" }
+assert_fs      = { version = "1" }
+insta          = { version = "1",     features = ["json"] }
+predicates     = { version = "3" }
+proptest       = { version = "1" }
+
+# Crates in this workspace
+telemetry-core = { path = "crates/telemetry-core" }
+telemetry-std  = { path = "crates/telemetry-std" }
+
+# ---------------------------------------------------------------------------
+# Shared lint configuration — all members opt in with `[lints] workspace = true`
+# ---------------------------------------------------------------------------
+[workspace.lints.rust]
+unsafe_code        = "warn"   # warn globally; telemetry-core uses forbid in its own lib.rs
+unused_must_use    = "deny"
+missing_debug_implementations = "warn"
+
+[workspace.lints.clippy]
+all      = { level = "warn",  priority = -1 }
+pedantic = { level = "warn",  priority = -1 }
+# Specific overrides
+unwrap_used  = "warn"
+expect_used  = "warn"
+panic        = "warn"
+# Allow a few pedantic lints that are overly noisy for embedded / no_std code
+must_use_candidate = "allow"
+module_name_repetitions = "allow"
+
+# ---------------------------------------------------------------------------
+# Profile tuning — release builds used for firmware (opt-level s = size)
+# ---------------------------------------------------------------------------
+[profile.release]
+opt-level     = "s"   # optimise for size (firmware); host is fast enough
+lto           = true
+codegen-units = 1
+debug         = 2     # keep debug symbols for probe-rs / defmt decode
