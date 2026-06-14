@@ -12,6 +12,10 @@ authors.workspace     = true
 default = []
 # Enable defmt::Format derives on public types (for on-target logging via RTT).
 defmt = ["dep:defmt"]
+# Expose in-memory test helpers (SimClock, CapturingStorage, FailStorage) for
+# use by integration tests and by downstream crates' test suites.
+# DO NOT enable in production builds.
+testutils = []
 
 [dependencies]
 serde    = { workspace = true }
@@ -22,7 +26,10 @@ cobs     = { workspace = true }
 defmt    = { workspace = true, optional = true }
 
 [dev-dependencies]
-proptest = { workspace = true }
+proptest       = { workspace = true }
+# Self-dependency with testutils feature so integration tests (tests/*.rs) can
+# use the shared test helpers from traits::test_support.
+telemetry-core = { path = ".", features = ["testutils"] }
 
 [lints]
 workspace = true

@@ -18,3 +18,7 @@ yocto/sstate-cache/
 
 # Local env / secrets
 .env
+
+# Claude Code shell snapshots (created by Claude Code CLI, not part of project)
+*shell-snapshots*
+snapshot-bash-*.sh

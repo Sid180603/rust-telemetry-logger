@@ -1,0 +1,21 @@
+[package]
+name    = "telemetry-core-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.telemetry-core]
+path = ".."
+
+# Fuzz targets must opt-out of tests and docs.
+[[bin]]
+name = "framer"
+path = "fuzz_targets/framer.rs"
+test = false
+doc  = false

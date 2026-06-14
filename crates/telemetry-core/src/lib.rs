@@ -15,7 +15,15 @@
 #![no_std]
 #![forbid(unsafe_code)]
 
+// In test builds the harness links std; declare it so test modules can use
+// `std::` paths (e.g. std::vec::Vec for growing test buffers).
+// When compiled with the `testutils` feature outside a test build, std is
+// available through the normal link path on std targets.
+#[cfg(any(test, feature = "testutils"))]
+extern crate std;
+
 // Re-export the public surface.  Modules are stubbed now and filled in Phase 1.
+pub mod config;
 pub mod error;
 pub mod filter;
 pub mod frame;
