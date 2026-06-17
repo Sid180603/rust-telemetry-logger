@@ -22,3 +22,10 @@ yocto/sstate-cache/
 # Claude Code shell snapshots (created by Claude Code CLI, not part of project)
 *shell-snapshots*
 snapshot-bash-*.sh
+
+# insta snapshot review files (pending diffs — not committed, run `cargo insta review`)
+**/*.snap.new
+
+# Runtime log output from telemetry-host / telemetry-linux
+logs/
+*.bin.log

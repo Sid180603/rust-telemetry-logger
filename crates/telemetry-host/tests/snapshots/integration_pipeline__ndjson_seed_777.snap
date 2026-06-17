@@ -1,0 +1,9 @@
+---
+source: crates/telemetry-host/tests/integration_pipeline.rs
+expression: stable
+---
+{"seq":0,"ts_us":0,"type":2,"type_name":"SensorData","severity":1,"severity_name":"Info","payload_hex":"d6d7bee7c2317925692f","payload_len":10}
+{"seq":1,"ts_us":0,"type":1,"type_name":"Heartbeat","severity":2,"severity_name":"Warning","payload_hex":"1804886bbfb7ce0df1","payload_len":9}
+{"seq":2,"ts_us":0,"type":2,"type_name":"SensorData","severity":1,"severity_name":"Info","payload_hex":"fe4c9ef316982de330512085ff52","payload_len":14}
+{"seq":3,"ts_us":0,"type":5,"type_name":"Control","severity":2,"severity_name":"Warning","payload_hex":"0db4a33257ea","payload_len":6}
+{"seq":4,"ts_us":0,"type":1,"type_name":"Heartbeat","severity":1,"severity_name":"Info","payload_hex":"","payload_len":0}

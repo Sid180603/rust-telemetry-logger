@@ -98,20 +98,47 @@ rust-telemetry-logger/
 
 ## Quick Start (host simulation — no hardware needed)
 
+The full loop — fake sensor → pipeline → log files → viewer — runs entirely on
+your laptop with no embedded hardware.
+
 ```bash
-# 1. Build all host crates (telemetry-fw is excluded from default-members)
+# 1. Build all host crates
 cargo build
 
-# 2. Generate test frames and run the pipeline (Phase 2+)
-# cargo run -p packet-generator -- --count 1000 --sink file --output frames.bin
-# cargo run -p telemetry-host   -- --source file --input frames.bin --out-dir logs/
-# cargo run -p telemetry-decode -- logs/seg-00000.bin --format table
+# 2. Generate 200 test frames (mix of valid + bad-CRC + seq-gap), save to a file
+cargo run -p packet-generator -- \
+  --count 200 --seed 42 \
+  --corrupt bad-crc,seq-gap --corrupt-rate 0.15 \
+  --out file:frames.bin
 
-# 3. Run all tests
-cargo test-all
+# 3. Run the pipeline: ingest frames → rotating .bin segments in logs/
+cargo run -p telemetry-host -- \
+  --in file:frames.bin \
+  --out-dir logs \
+  --segment-size 8192
+
+# 4a. View records as a human-readable table
+cargo run -p telemetry-decode -- logs/seg-00001.bin --format table
+
+# 4b. View as NDJSON (pipe to jq for filtering)
+cargo run -p telemetry-decode -- --in-dir logs --format ndjson | jq .
+
+# 4c. Show only errors and above, with a stats summary
+cargo run -p telemetry-decode -- --in-dir logs --min-severity 3 --stats
+
+# 5. Run all tests
+cargo test --workspace --exclude telemetry-fw
 ```
 
-> **Note:** Steps 2–3 are stubbed during Phase 0. Full implementation lands in Phase 2.
+**One-liner demo** (PowerShell):
+```powershell
+cargo run -p packet-generator -- --count 50 --out file:demo.bin; `
+cargo run -p telemetry-host   -- --in file:demo.bin --out-dir demo-logs --stats-interval 0; `
+cargo run -p telemetry-decode -- --in-dir demo-logs --format table
+```
+
+> The pipeline stats line (stderr) shows accepted / dropped / crc\_fail / seq\_gap counts,
+> proving the validation layer handled the injected corruption gracefully.
 
 ---
 

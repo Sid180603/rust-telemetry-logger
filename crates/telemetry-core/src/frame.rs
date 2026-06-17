@@ -59,6 +59,35 @@ pub struct Frame {
 }
 
 impl Frame {
+    /// Construct a new frame from its parts.
+    ///
+    /// Fills `version` ([`crate::protocol::PROTOCOL_VERSION`]) and `payload_len`
+    /// automatically.  Returns `None` if `payload` is longer than [`MAX_PAYLOAD`].
+    ///
+    /// The `crc_bytes` field is zeroed; it is recomputed when [`Frame::encode_cobs`]
+    /// is called (the stored bytes are only used by the validator for incoming frames).
+    pub fn new(packet_type: u8, severity: u8, sequence: u32, payload: &[u8]) -> Option<Self> {
+        if payload.len() > MAX_PAYLOAD {
+            return None;
+        }
+        let mut p: Vec<u8, MAX_PAYLOAD> = Vec::new();
+        // unwrap: len checked above
+        p.extend_from_slice(payload).ok()?;
+        Some(Self {
+            header: Header {
+                version: crate::protocol::PROTOCOL_VERSION,
+                packet_type,
+                severity,
+                sequence,
+                // payload.len() <= MAX_PAYLOAD = 480, which always fits in u16.
+                // try_from makes this explicit to the type checker.
+                payload_len: u16::try_from(payload.len()).ok()?,
+            },
+            payload: p,
+            crc_bytes: [0; 2],
+        })
+    }
+
     /// Total decoded byte length: `HEADER_LEN + payload.len() + CRC16_LEN`.
     #[inline]
     pub fn raw_len(&self) -> usize {
@@ -157,6 +186,38 @@ mod tests {
             payload: p,
             crc_bytes: [0; 2], // encode_raw/cobs ignores this
         }
+    }
+
+    #[test]
+    fn new_constructor_fills_version_and_payload_len() {
+        let f = Frame::new(0x02, 0x01, 99, b"hello").expect("payload fits");
+        assert_eq!(f.header.version, PROTOCOL_VERSION);
+        assert_eq!(f.header.packet_type, 0x02);
+        assert_eq!(f.header.severity, 0x01);
+        assert_eq!(f.header.sequence, 99);
+        assert_eq!(f.header.payload_len, 5);
+        assert_eq!(&f.payload[..], b"hello");
+    }
+
+    #[test]
+    fn new_constructor_empty_payload() {
+        let f = Frame::new(0x01, 0x00, 0, b"").expect("empty payload is valid");
+        assert_eq!(f.header.payload_len, 0);
+        assert!(f.payload.is_empty());
+    }
+
+    #[test]
+    fn new_constructor_oversized_payload_returns_none() {
+        let big = [0u8; MAX_PAYLOAD + 1];
+        assert!(Frame::new(0x01, 0x00, 0, &big).is_none());
+    }
+
+    #[test]
+    fn new_encode_cobs_decodes_correctly() {
+        let f = Frame::new(0x03, 0x02, 7, b"world").expect("fits");
+        let mut buf = [0u8; MAX_COBS_FRAME_BYTES];
+        let n = f.encode_cobs(&mut buf).expect("buffer fits");
+        assert_eq!(buf[n - 1], 0x00);
     }
 
     #[test]
