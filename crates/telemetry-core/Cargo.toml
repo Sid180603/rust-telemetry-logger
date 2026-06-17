@@ -9,17 +9,27 @@ repository.workspace  = true
 authors.workspace     = true
 
 [features]
-default = []
+default = ["full"]
+# Encode-only slice for sender devices: just `protocol` + `frame`
+# (Frame, Header, encode_cobs, wire constants).  Pulls in none of the
+# receive/store pipeline — minimal footprint for constrained MCUs.
+encode = []
+# Full receive/store pipeline: adds framer, validator, filter, ringbuf,
+# record, stats, traits, pipeline, config on top of the `encode` base.
+# Features are additive, so `full` is a strict superset of `encode`.
+# `record` is the only consumer of postcard, so it is pulled in here.
+full = ["encode", "dep:postcard"]
 # Enable defmt::Format derives on public types (for on-target logging via RTT).
 defmt = ["dep:defmt"]
 # Expose in-memory test helpers (SimClock, CapturingStorage, FailStorage) for
 # use by integration tests and by downstream crates' test suites.
+# The helpers live in `traits` (full-only), so this implies `full`.
 # DO NOT enable in production builds.
-testutils = []
+testutils = ["full"]
 
 [dependencies]
 serde    = { workspace = true }
-postcard = { workspace = true }
+postcard = { workspace = true, optional = true }
 heapless = { workspace = true }
 crc      = { workspace = true }
 cobs     = { workspace = true }

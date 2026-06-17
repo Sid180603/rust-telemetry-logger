@@ -1,6 +1,7 @@
 //! [`Frame`] and [`Header`] data types produced by the framer, plus encoding helpers.
 //!
-//! These are *data* types only — parsing lives in [`crate::framer`].
+//! These are *data* types only.
+#![cfg_attr(feature = "full", doc = " Parsing lives in [`crate::framer`].")]
 //!
 //! # Encoding
 //!
@@ -42,11 +43,14 @@ pub struct Header {
 // Frame
 // ──────────────────────────────────────────────────────────────────────────────
 
-/// A decoded wire frame produced by [`crate::framer::Framer`].
+/// A decoded wire frame.
+#[cfg_attr(feature = "full", doc = "\nProduced by [`crate::framer::Framer`].")]
 ///
-/// `crc_bytes` holds the raw trailing bytes that arrived on the wire; the
-/// [`crate::validator::Validator`] computes the expected `CRC-16` independently
-/// and compares against these bytes.
+/// `crc_bytes` holds the raw trailing `CRC-16` bytes that arrived on the wire.
+#[cfg_attr(
+    feature = "full",
+    doc = "The [`crate::validator::Validator`] computes the expected `CRC-16` independently and compares against these bytes."
+)]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Frame {
     /// Parsed frame header.

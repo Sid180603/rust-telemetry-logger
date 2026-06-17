@@ -38,8 +38,10 @@ pub const CRC16_RESIDUE: u16 = 0xF0B8;
 /// Packet type discriminant embedded in the `type` field of every wire frame.
 ///
 /// Use [`TryFrom<u8>`] to convert a raw byte; an unrecognised byte yields `Err(())`.
-/// Frames with unrecognised types are rejected with
-/// [`crate::error::Reason::Filtered`].
+#[cfg_attr(
+    feature = "full",
+    doc = "\nFrames with unrecognised types are rejected with [`crate::error::Reason::Filtered`]."
+)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 #[repr(u8)]
@@ -78,9 +80,11 @@ impl TryFrom<u8> for PacketType {
 
 /// Severity level embedded in the `severity` field of every wire frame.
 ///
-/// Severity levels are **ordered** (`Debug < Info < Warning < Error < Fatal`);
-/// [`crate::filter::FilterConfig`] uses this ordering to implement a
-/// minimum-severity threshold.
+/// Severity levels are **ordered** (`Debug < Info < Warning < Error < Fatal`).
+#[cfg_attr(
+    feature = "full",
+    doc = "\n[`crate::filter::FilterConfig`] uses this ordering to implement a minimum-severity threshold."
+)]
 ///
 /// Use [`TryFrom<u8>`] to convert a raw byte; an unrecognised byte yields `Err(())`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

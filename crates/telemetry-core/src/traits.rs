@@ -5,8 +5,11 @@
 //! - [`Clock`]: provide a monotonic timestamp in **microseconds** (`u64`).
 //!
 //! All three traits are implemented for real hardware in the platform-specific
-//! crates (`telemetry-std`, `telemetry-linux`, `telemetry-fw`).  In-memory
-//! implementations for testing live in [`test_support`].
+//! crates (`telemetry-std`, `telemetry-linux`, `telemetry-fw`).
+#![cfg_attr(
+    any(test, feature = "testutils"),
+    doc = "In-memory implementations for testing live in [`test_support`]."
+)]
 
 // ──────────────────────────────────────────────────────────────────────────────
 // PacketSource

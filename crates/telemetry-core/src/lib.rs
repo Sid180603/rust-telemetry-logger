@@ -9,9 +9,17 @@
 //! - an embedded Linux daemon (Yocto / systemd), and
 //! - bare-metal firmware (RP2350 / Pico 2, `no_std`).
 //!
-//! The [`Pipeline`] struct is the main entry point.  Consumers wire it up by
-//! implementing the [`traits::PacketSource`], [`traits::Storage`], and
-//! [`traits::Clock`] traits.
+//! # Feature tiers
+//!
+//! Cargo features are **additive**: `full` is a strict superset of `encode`.
+//! - **`encode`** (base slice): the wire contract only — [`protocol`] constants
+//!   plus [`frame::Frame`] / [`frame::Header`] and [`frame::Frame::encode_cobs`].
+//!   This is all a *sender* device needs.
+//! - **`full`** (default): adds the receive/store pipeline on top of `encode`.
+#![cfg_attr(
+    feature = "full",
+    doc = "\nThe [`pipeline::Pipeline`] struct is the main entry point.  Consumers wire it up by implementing the [`traits::PacketSource`], [`traits::Storage`], and [`traits::Clock`] traits."
+)]
 #![no_std]
 #![forbid(unsafe_code)]
 
@@ -22,16 +30,36 @@
 #[cfg(any(test, feature = "testutils"))]
 extern crate std;
 
-// Re-export the public surface.  Modules are stubbed now and filled in Phase 1.
-pub mod config;
-pub mod error;
-pub mod filter;
+// Public surface, split into two additive feature tiers.
+//
+// `encode` (the base slice): the irreducible wire contract — protocol
+// constants/enums plus the Frame/Header data types and `encode_cobs`.  A
+// sender device needs only this.
+//
+// `full` (= `encode` + everything below): the receive/store pipeline.  All
+// existing consumers build with `default = ["full"]`, so they are unaffected.
+#[cfg(feature = "encode")]
 pub mod frame;
-pub mod framer;
-pub mod pipeline;
+#[cfg(feature = "encode")]
 pub mod protocol;
+
+#[cfg(feature = "full")]
+pub mod config;
+#[cfg(feature = "full")]
+pub mod error;
+#[cfg(feature = "full")]
+pub mod filter;
+#[cfg(feature = "full")]
+pub mod framer;
+#[cfg(feature = "full")]
+pub mod pipeline;
+#[cfg(feature = "full")]
 pub mod record;
+#[cfg(feature = "full")]
 pub mod ringbuf;
+#[cfg(feature = "full")]
 pub mod stats;
+#[cfg(feature = "full")]
 pub mod traits;
+#[cfg(feature = "full")]
 pub mod validator;

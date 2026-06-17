@@ -90,6 +90,28 @@ jobs:
         run: cargo build -p telemetry-core --target thumbv8m.main-none-eabihf
 
   # -------------------------------------------------------------------------
+  # Job: encode-only slice — proves the sender-side feature slice
+  #   (`protocol` + `frame` only) compiles for bare-metal and stays tiny.
+  #   Regression fence: a stray `use crate::error::…` in frame.rs would break
+  #   this build.
+  # -------------------------------------------------------------------------
+  build-encode-slice:
+    name: Build encode slice (thumbv8m)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.89.0"
+          targets: thumbv8m.main-none-eabihf
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: cargo build telemetry-core --features encode (thumbv8m.main-none-eabihf)
+        run: cargo build -p telemetry-core --no-default-features --features encode --target thumbv8m.main-none-eabihf
+
+  # -------------------------------------------------------------------------
   # Job 5: aarch64 cross-build via `cross` (Docker)
   #   Proves telemetry-linux compiles for Raspberry Pi 4/5 / Yocto target.
   # -------------------------------------------------------------------------
