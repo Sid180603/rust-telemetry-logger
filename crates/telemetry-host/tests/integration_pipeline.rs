@@ -432,10 +432,11 @@ fn decode_ndjson_snapshot() {
 
 /// Snapshot of table output for a fully deterministic 5-frame run.
 ///
-/// The timestamp column is normalised to `00000` before snapshotting by
-/// identifying it **by column position** (second `|`-delimited cell), not by
-/// digit length.  This is the correct, stable approach — digit-length
-/// heuristics break when the system clock hasn't advanced much at test startup.
+/// The timestamp column is normalised to a fixed `<ts>` placeholder before
+/// snapshotting by identifying it **by column position** (second `|`-delimited
+/// cell), not by digit length.  This is the correct, stable approach — digit-
+/// length heuristics break when the system clock hasn't advanced much at test
+/// startup, producing a different number of digits between runs.
 #[test]
 fn decode_table_snapshot() {
     let gen_dir = TempDir::new().unwrap();
@@ -609,16 +610,26 @@ fn normalize_json_timestamps(s: &str) -> String {
     out
 }
 
-/// Replace all digits in the timestamp column of a `comfy-table` output with
-/// `'0'`, identified **by column position** (the second `|`-delimited cell).
+/// Canonical placeholder substituted for the variable timestamp value in table
+/// snapshots.  Using a fixed token (rather than a run of `'0'`s) makes the
+/// normalised output independent of the timestamp's *digit count*, which varies
+/// between runs depending on how far the monotonic clock has advanced.
+const TABLE_TS_PLACEHOLDER: &str = "<ts>";
+
+/// Replace the timestamp value in the timestamp column of a `comfy-table`
+/// output with a fixed-width placeholder, identified **by column position**
+/// (the second `|`-delimited cell).
 ///
-/// Column-position targeting is correct and robust: it works regardless of how
-/// many digits the timestamp contains.  Digit-length heuristics (e.g. "≥ 6
-/// digits") break when the clock has barely advanced at test startup.
+/// Why a fixed token and not a per-digit `'0'` swap: `comfy-table` left-aligns
+/// the cell value and pads the remainder with spaces to a stable, header-driven
+/// column width.  A per-digit replacement therefore leaks the original digit
+/// count (`00` vs `0000`), so two runs whose clocks advanced by different
+/// magnitudes produce different snapshots.  Substituting the whole value with a
+/// constant token and re-padding to the original cell width removes that
+/// dependency while preserving the column width, so the snapshot still catches
+/// alignment and layout regressions.
 ///
-/// The function leaves header rows, separator rows, and all other cells
-/// completely unchanged so the snapshot still catches alignment and format
-/// regressions.
+/// Header rows, separator rows, and every other cell are left untouched.
 fn normalize_table_timestamps(s: &str) -> String {
     s.lines()
         .map(|line| {
@@ -642,11 +653,15 @@ fn normalize_table_timestamps(s: &str) -> String {
             //   parts[5] = " payload "
             //   parts[6] = ""            (after trailing |)
             let mut parts: Vec<String> = line.split('|').map(str::to_owned).collect();
-            if parts.len() >= 3 {
-                parts[2] = parts[2]
-                    .chars()
-                    .map(|c| if c.is_ascii_digit() { '0' } else { c })
-                    .collect();
+            if let Some(cell) = parts.get_mut(2) {
+                // Preserve the exact cell width so the table layout is unchanged.
+                // comfy-table pads each cell with one leading space and left-
+                // aligns the value, so we rebuild it the same way: a leading
+                // space, then the placeholder left-aligned within the remaining
+                // width.
+                let width = cell.chars().count();
+                let inner = width.saturating_sub(1);
+                *cell = format!(" {TABLE_TS_PLACEHOLDER:<inner$}");
             }
             parts.join("|")
         })

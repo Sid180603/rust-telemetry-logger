@@ -10,6 +10,19 @@ fuzz/target
 .vscode/
 .idea/
 *.iml
+*.swp
+*.swo
+
+# Merge / backup leftovers
+*.orig
+
+# Code coverage & profiling artifacts (cargo-llvm-cov, tarpaulin, perf)
+*.profraw
+*.profdata
+/coverage/
+tarpaulin-report.*
+cobertura.xml
+lcov.info
 
 # Yocto build artifacts (these live in yocto/ but can be large)
 yocto/build/
